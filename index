@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Tokens</title>
+    <style>
+        /* Estilo do corpo */
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(90deg, #1e3c72, #2a5298);
+            color: #fff;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        /* Container principal */
+        .container {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            box-shadow: 0 4px 25px rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            width: 90%;
+            max-width: 600px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h2 {
+            text-align: center;
+            color: #b3e5fc;
+            margin-bottom: 15px;
+        }
+
+        label {
+            font-size: 0.9rem;
+            margin-top: 10px;
+        }
+
+        input {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0 10px;
+            border: none;
+            border-radius: 5px;
+            background-color: rgba(255, 255, 255, 0.9);
+            border: 1px solid #ccc;
+            color: #333;
+            font-size: 0.95rem;
+        }
+
+        button {
+            margin-top: 10px;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            background: #4caf50;
+            color: #fff;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background: #388e3c;
+        }
+
+        .resultado {
+            margin-top: 10px;
+            text-align: center;
+        }
+
+        .resultado p {
+            font-size: 0.95rem;
+            margin: 3px 0;
+        }
+
+        /* Barra de progresso */
+        .progress-bar-container {
+            width: 100%;
+            background-color: #ddd;
+            border-radius: 20px;
+            overflow: hidden;
+            margin-top: 20px;
+        }
+
+        .progress-bar {
+            height: 20px;
+            border-radius: 20px;
+            width: 0;
+            background-color: #4caf50;
+            text-align: center;
+            line-height: 20px;
+            color: white;
+            font-weight: bold;
+            transition: width 0.3s ease;
+        }
+
+        .progress-bar.yellow {
+            background-color: #f9c74f;
+        }
+
+        .progress-bar.red {
+            background-color: #f94144;
+        }
+
+        /* Responsividade */
+        @media(max-width: 768px) {
+            .container {
+                width: 95%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Calculadora de Tokens</h2>
+        <label for="valorMilhaoEnviados">Valor por milhão de tokens enviados (em R$):</label>
+        <input type="number" id="valorMilhaoEnviados" placeholder="Ex: 20.00" step="0.01" required>
+
+        <label for="valorMilhaoRecebidos">Valor por milhão de tokens recebidos (em R$):</label>
+        <input type="number" id="valorMilhaoRecebidos" placeholder="Ex: 15.00" step="0.01" required>
+
+        <label for="limiteMensal">Limite Mensal (em R$):</label>
+        <input type="number" id="limiteMensal" placeholder="Ex: 500.00" step="0.01" required>
+
+        <label for="tokensEnviados">Tokens Enviados (em Milhões):</label>
+        <input type="number" id="tokensEnviados" placeholder="Ex: 0.3" step="0.01" required>
+
+        <label for="tokensRecebidos">Tokens Recebidos (em Milhões):</label>
+        <input type="number" id="tokensRecebidos" placeholder="Ex: 0.5" step="0.01" required>
+
+        <button onclick="calcularGasto()">Calcular</button>
+        <div class="resultado">
+            <p id="totalTokens">Tokens Totais: -</p>
+            <p id="custoTotal">Custo Mensal: R$ -</p>
+        </div>
+
+        <h2>Orçamento Mensal</h2>
+        <div class="progress-bar-container">
+            <div id="progress-bar" class="progress-bar">0%</div>
+        </div>
+    </div>
+
+    <script>
+        function calcularGasto() {
+            const valorMilhaoEnviados = parseFloat(document.getElementById('valorMilhaoEnviados').value);
+            const valorMilhaoRecebidos = parseFloat(document.getElementById('valorMilhaoRecebidos').value);
+            const limiteMensal = parseFloat(document.getElementById('limiteMensal').value);
+            const tokensEnviados = parseFloat(document.getElementById('tokensEnviados').value) || 0;
+            const tokensRecebidos = parseFloat(document.getElementById('tokensRecebidos').value) || 0;
+
+            // Validações básicas
+            if (isNaN(valorMilhaoEnviados) || isNaN(valorMilhaoRecebidos) || isNaN(limiteMensal)) {
+                alert('Por favor, insira valores válidos.');
+                return;
+            }
+
+            // Cálculos
+            const custoEnviados = valorMilhaoEnviados * tokensEnviados;
+            const custoRecebidos = valorMilhaoRecebidos * tokensRecebidos;
+            const custoTotal = custoEnviados + custoRecebidos;
+            const totalTokens = tokensEnviados + tokensRecebidos; // Em milhões
+            const percentualGasto = (custoTotal / limiteMensal) * 100;
+
+            // Atualizando resultados
+            document.getElementById('totalTokens').textContent = `Tokens Totais: ${totalTokens.toLocaleString()}M`;
+            document.getElementById('custoTotal').textContent = `Custo Mensal: R$ ${custoTotal.toFixed(2)}`;
+
+            // Atualizando barra de progresso
+            atualizarBarraDeProgresso(percentualGasto);
+        }
+
+        function atualizarBarraDeProgresso(percentual) {
+            const progressBar = document.getElementById('progress-bar');
+            progressBar.style.width = `${Math.min(percentual, 100)}%`;
+            progressBar.textContent = `${Math.min(percentual, 100).toFixed(0)}%`;
+
+            // Alterando cor conforme o percentual
+            if (percentual < 80) {
+                progressBar.className = 'progress-bar';
+            } else if (percentual >= 80 && percentual < 100) {
+                progressBar.className = 'progress-bar yellow';
+            } else {
+                progressBar.className = 'progress-bar red';
+            }
+        }
+    </script>
+</body>
+</html>
